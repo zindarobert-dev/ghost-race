@@ -235,41 +235,129 @@ function CourseMap({ race, height = 400, mini = false }) {
   const h = height;
   const toPath = (track) => track.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 
+  // Seeded random so landmarks stay stable per race
+  const rand = (i) => {
+    const x = Math.sin(race.id * 9301 + i * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  // Topographic contour lines
   const contourLines = [];
-  for (let i = 0; i < 8; i++) {
-    const y1 = 40 + i * 45;
+  for (let i = 0; i < 11; i++) {
+    const y1 = 25 + i * 36;
     const pts = [];
-    for (let x = 0; x <= w; x += 20) {
-      pts.push(`${x},${y1 + Math.sin(x * 0.008 + i * 1.2) * 18 + Math.sin(x * 0.015 + i * 0.7) * 10}`);
+    for (let x = -10; x <= w + 10; x += 14) {
+      pts.push(`${x},${y1 + Math.sin(x * 0.01 + i * 1.2 + race.id) * 20 + Math.sin(x * 0.019 + i * 0.7) * 11}`);
     }
     contourLines.push(pts.join(" "));
   }
 
+  // Winding river
+  const riverPts = Array.from({ length: 24 }).map((_, i) => {
+    const x = (i / 23) * (w + 20) - 10;
+    const y = h * 0.62 + Math.sin(x * 0.014 + race.id * 2) * 34 + Math.sin(x * 0.032) * 14;
+    return `${i === 0 ? "M" : "L"} ${x} ${y}`;
+  }).join(" ");
+
+  // Mountain peaks
+  const mountains = Array.from({ length: 7 }).map((_, i) => ({
+    x: 40 + rand(i * 3) * (w - 80),
+    y: 50 + rand(i * 3 + 1) * (h - 160),
+    size: 13 + rand(i * 3 + 2) * 11,
+  }));
+
+  // Pine trees
+  const trees = Array.from({ length: 22 }).map((_, i) => ({
+    x: rand(i * 5 + 200) * w,
+    y: 30 + rand(i * 5 + 201) * (h - 50),
+    size: 2.5 + rand(i * 5 + 202) * 2,
+  }));
+
   return (
-    <div style={{ position: "relative", background: "#060b08", border: mini ? "none" : "1px solid #1a2a20", overflow: "hidden" }}>
+    <div style={{ position: "relative", background: "#000", border: mini ? "none" : "1px solid #1a1a22", overflow: "hidden" }}>
       <svg viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: "block", height: mini ? 140 : height }}>
         <defs>
           <filter id={`gl-${race.id}`}><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <linearGradient id={`gg-${race.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#7fff9a" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="#7fff9a" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#7fff9a" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#7fff9a" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="#b8ffce" stopOpacity="1" />
+            <stop offset="100%" stopColor="#7fff9a" stopOpacity="0.6" />
           </linearGradient>
+          <linearGradient id={`mt-${race.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#6b6456" />
+            <stop offset="40%" stopColor="#3a3428" />
+            <stop offset="100%" stopColor="#141014" />
+          </linearGradient>
+          <radialGradient id={`vig-${race.id}`} cx="50%" cy="50%" r="65%">
+            <stop offset="60%" stopColor="#000" stopOpacity="0" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.75" />
+          </radialGradient>
         </defs>
 
-        {!mini && contourLines.map((pts, i) => <polyline key={i} points={pts} fill="none" stroke="#0f1a14" strokeWidth="0.8" opacity={0.6} />)}
-        {!mini && Array.from({ length: 15 }).map((_, xi) => Array.from({ length: 8 }).map((_, yi) => <circle key={`${xi}-${yi}`} cx={50 + xi * 46} cy={30 + yi * 48} r="0.6" fill="#1a2a20" opacity="0.5" />))}
+        {/* Navigation grid */}
+        {!mini && (
+          <g opacity="0.18">
+            {Array.from({ length: 13 }).map((_, i) => {
+              const y = (i / 12) * h;
+              return <line key={`h${i}`} x1="0" y1={y} x2={w} y2={y} stroke="#3a4458" strokeWidth="0.5" />;
+            })}
+            {Array.from({ length: 19 }).map((_, i) => {
+              const x = (i / 18) * w;
+              return <line key={`v${i}`} x1={x} y1="0" x2={x} y2={h} stroke="#3a4458" strokeWidth="0.5" />;
+            })}
+          </g>
+        )}
 
-        <path d={toPath(race.officialTrack)} fill="none" stroke="#1a3a25" strokeWidth={mini ? 2 : 2.5} strokeDasharray={mini ? "4,4" : "6,6"} opacity="0.7" />
-        <path d={toPath(race.ghostTrack)} fill="none" stroke={`url(#gg-${race.id})`} strokeWidth={mini ? 2.5 : 3} filter={`url(#gl-${race.id})`} strokeLinecap="round" strokeLinejoin="round" />
+        {/* Topographic contours — warm tan, major lines every 3rd */}
+        {!mini && contourLines.map((pts, i) => (
+          <polyline key={i} points={pts} fill="none" stroke={i % 3 === 0 ? "#4a3d28" : "#2a2418"} strokeWidth={i % 3 === 0 ? "1" : "0.6"} opacity={i % 3 === 0 ? 0.75 : 0.45} />
+        ))}
+
+        {/* River — blue water feature */}
+        {!mini && (
+          <>
+            <path d={riverPts} fill="none" stroke="#0f2640" strokeWidth="7" opacity="0.7" strokeLinecap="round" />
+            <path d={riverPts} fill="none" stroke="#2a5c8a" strokeWidth="3" opacity="0.85" strokeLinecap="round" />
+            <path d={riverPts} fill="none" stroke="#5ba0d0" strokeWidth="1" opacity="0.6" strokeLinecap="round" />
+          </>
+        )}
+
+        {/* Mountains — 3D peaks with snow caps */}
+        {!mini && mountains.map((m, i) => (
+          <g key={`mt${i}`}>
+            <ellipse cx={m.x + m.size * 0.3} cy={m.y + m.size * 1.5} rx={m.size * 1.2} ry={m.size * 0.2} fill="#000" opacity="0.6" />
+            <polygon points={`${m.x},${m.y} ${m.x - m.size},${m.y + m.size * 1.4} ${m.x + m.size},${m.y + m.size * 1.4}`} fill={`url(#mt-${race.id})`} stroke="#5a5245" strokeWidth="0.7" />
+            <polygon points={`${m.x},${m.y} ${m.x - m.size * 0.3},${m.y + m.size * 0.55} ${m.x + m.size * 0.15},${m.y + m.size * 0.55}`} fill="#8a8478" opacity="0.85" />
+            <polygon points={`${m.x},${m.y} ${m.x - m.size * 0.15},${m.y + m.size * 0.28} ${m.x + m.size * 0.08},${m.y + m.size * 0.28}`} fill="#d8d4c4" opacity="0.9" />
+          </g>
+        ))}
+
+        {/* Pine trees with shadows */}
+        {!mini && trees.map((t, i) => (
+          <g key={`tr${i}`} opacity="0.75">
+            <ellipse cx={t.x} cy={t.y + t.size * 1.7} rx={t.size * 0.9} ry={t.size * 0.15} fill="#000" opacity="0.5" />
+            <polygon points={`${t.x},${t.y} ${t.x - t.size},${t.y + t.size * 1.6} ${t.x + t.size},${t.y + t.size * 1.6}`} fill="#1a2a1a" stroke="#3a5230" strokeWidth="0.3" />
+          </g>
+        ))}
+
+        {/* Vignette for depth */}
+        {!mini && <rect width={w} height={h} fill={`url(#vig-${race.id})`} pointerEvents="none" />}
+
+        {/* Official course — silver dashed with drop shadow */}
+        <path d={toPath(race.officialTrack)} fill="none" stroke="#000" strokeWidth={mini ? 4 : 5} opacity="0.7" transform="translate(2,3)" />
+        <path d={toPath(race.officialTrack)} fill="none" stroke="#a8aec0" strokeWidth={mini ? 2 : 2.5} strokeDasharray={mini ? "4,4" : "6,6"} opacity="0.9" />
+
+        {/* Ghost track — bright green with drop shadow */}
+        <path d={toPath(race.ghostTrack)} fill="none" stroke="#000" strokeWidth={mini ? 5 : 7} opacity="0.8" transform="translate(2,4)" />
+        <path d={toPath(race.ghostTrack)} fill="none" stroke={`url(#gg-${race.id})`} strokeWidth={mini ? 2.5 : 3.5} filter={`url(#gl-${race.id})`} strokeLinecap="round" strokeLinejoin="round" />
 
         {!mini && <>
-          <circle cx={race.ghostTrack[0].x} cy={race.ghostTrack[0].y} r="6" fill="#0a0f0c" stroke="#7fff9a" strokeWidth="1.5" />
-          <text x={race.ghostTrack[0].x} y={race.ghostTrack[0].y + 3.5} textAnchor="middle" fill="#7fff9a" fontSize="7" fontFamily="'Courier Prime', monospace">G</text>
-          <circle cx={race.officialTrack[0].x} cy={race.officialTrack[0].y} r="6" fill="#0a0f0c" stroke="#3a7a52" strokeWidth="1.5" />
-          <text x={race.officialTrack[0].x} y={race.officialTrack[0].y + 3.5} textAnchor="middle" fill="#3a7a52" fontSize="7" fontFamily="'Courier Prime', monospace">S</text>
-          <circle cx={race.officialTrack.at(-1).x} cy={race.officialTrack.at(-1).y} r="6" fill="#0a0f0c" stroke="#3a7a52" strokeWidth="1.5" />
-          <text x={race.officialTrack.at(-1).x} y={race.officialTrack.at(-1).y + 3.5} textAnchor="middle" fill="#3a7a52" fontSize="7" fontFamily="'Courier Prime', monospace">F</text>
+          <circle cx={race.ghostTrack[0].x} cy={race.ghostTrack[0].y} r="7" fill="#000" stroke="#7fff9a" strokeWidth="1.8" />
+          <text x={race.ghostTrack[0].x} y={race.ghostTrack[0].y + 3.5} textAnchor="middle" fill="#7fff9a" fontSize="8" fontFamily="'Courier Prime', monospace" fontWeight="bold">G</text>
+          <circle cx={race.officialTrack[0].x} cy={race.officialTrack[0].y} r="7" fill="#000" stroke="#d8dce8" strokeWidth="1.5" />
+          <text x={race.officialTrack[0].x} y={race.officialTrack[0].y + 3.5} textAnchor="middle" fill="#d8dce8" fontSize="8" fontFamily="'Courier Prime', monospace" fontWeight="bold">S</text>
+          <circle cx={race.officialTrack.at(-1).x} cy={race.officialTrack.at(-1).y} r="7" fill="#000" stroke="#ffb84a" strokeWidth="1.5" />
+          <text x={race.officialTrack.at(-1).x} y={race.officialTrack.at(-1).y + 3.5} textAnchor="middle" fill="#ffb84a" fontSize="8" fontFamily="'Courier Prime', monospace" fontWeight="bold">F</text>
         </>}
 
         {!mini && race.photos.map((photo, i) => (
@@ -289,11 +377,11 @@ function CourseMap({ race, height = 400, mini = false }) {
           <span style={{ color: "#7fff9a", display: "flex", alignItems: "center", gap: 6 }}>
             <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#7fff9a" strokeWidth="2" /></svg> Ghost Route
           </span>
-          <span style={{ color: "#3a5a45", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#1a3a25" strokeWidth="2" strokeDasharray="4,4" /></svg> Official Course
+          <span style={{ color: "#a8aec0", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#a8aec0" strokeWidth="2" strokeDasharray="4,4" /></svg> Official Course
           </span>
-          <span style={{ color: "#5a7a6a", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#0a0f0c" stroke="#3a7a52" strokeWidth="1" /></svg> Photo
+          <span style={{ color: "#8a90a0", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#000" stroke="#a8aec0" strokeWidth="1" /></svg> Photo
           </span>
         </div>
       )}
