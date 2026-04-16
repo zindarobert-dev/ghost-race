@@ -328,7 +328,7 @@ function Nav({ page, onNav }) {
   return (
     <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,10,10,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #2A2A2A", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
       <div onClick={() => onNav("landing")} style={{ fontFamily: "'Oswald', sans-serif", fontSize: 18, color: "#C8B87C", letterSpacing: "0.15em", cursor: "pointer", textTransform: "uppercase" }}>
-        GHOSTED PROTOCOL
+        GHOSTED
       </div>
       {/* Desktop links */}
       <div className="nav-desktop" style={{ display: "flex", gap: 24 }}>
@@ -375,7 +375,7 @@ function Landing({ onEnter }) {
         </ScrollReveal>
         <ScrollReveal delay={300}>
           <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: "min(14vw, 120px)", color: "#F5F5F0", letterSpacing: "0.08em", lineHeight: 0.9, textAlign: "center", margin: 0, textTransform: "uppercase" }}>
-            GHOSTED<br />PROTOCOL
+            GHOSTED
           </h1>
         </ScrollReveal>
         <ScrollReveal delay={500}>
@@ -478,7 +478,7 @@ function Landing({ onEnter }) {
             </h2>
             <div style={{ width: 40, height: 2, background: "linear-gradient(90deg, transparent, #C8B87C, transparent)", margin: "0 auto 32px" }} />
             <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, color: "#999999", lineHeight: 1.8, maxWidth: 560, margin: "0 auto" }}>
-              Ghosted Protocol is a registry for athletes who design their own suffering. Run the course backwards before the race starts. Add 74 miles before the marathon. Complete a half ironman the day before the full. Upload your GPS data and photos. Prove you did it. Then disappear.
+              Ghosted is a registry for athletes who design their own suffering. Run the course backwards before the race starts. Add 74 miles before the marathon. Complete a half ironman the day before the full. Upload your GPS data and photos. Prove you did it. Then disappear.
             </p>
           </ScrollReveal>
         </div>
@@ -488,9 +488,9 @@ function Landing({ onEnter }) {
       <footer style={{ background: "#0A0A0A", borderTop: "1px solid #2A2A2A", padding: "48px 20px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 32 }}>
           <div>
-            <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 16, color: "#C8B87C", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>GHOSTED PROTOCOL</div>
+            <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 16, color: "#C8B87C", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>GHOSTED</div>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#666666", letterSpacing: "0.1em" }}>DECLARE. EXECUTE. PROVE. DISAPPEAR.</div>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#666666", marginTop: 16 }}>&copy; GHOSTED PROTOCOL MMXXVI</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#666666", marginTop: 16 }}>&copy; GHOSTED MMXXVI</div>
           </div>
           <div style={{ display: "flex", gap: 16 }}>
             {[["registry", "REGISTRY"], ["submit", "SUBMIT"], ["about", "ABOUT"]].map(([k, l]) => (
@@ -835,12 +835,12 @@ function About({ onNav }) {
     <div style={{ minHeight: "100vh", background: "#0A0A0A", padding: "48px 20px 80px" }}>
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <ScrollReveal>
-          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 42, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 32px" }}>ABOUT THE PROTOCOL</h2>
+          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 42, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 32px" }}>ABOUT GHOSTED</h2>
         </ScrollReveal>
 
         <ScrollReveal delay={100}>
           <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: "#E0E0E0", lineHeight: 1.8, marginBottom: 24 }}>
-            Ghosted Protocol exists for athletes who need more than what race day offers. The ones who look at a 50-mile course and think: what if I ran it backwards first? The ones who add 74 miles before a marathon just to see what happens at mile 99.
+            Ghosted exists for athletes who need more than what race day offers. The ones who look at a 50-mile course and think: what if I ran it backwards first? The ones who add 74 miles before a marathon just to see what happens at mile 99.
           </p>
           <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 16, color: "#E0E0E0", lineHeight: 1.8, marginBottom: 24 }}>
             This is not a race series. There are no entry fees, no aid stations, no finisher medals. This is a registry -- a permanent record of missions designed and executed by individual athletes, verified by GPS data and geotagged field photos.
