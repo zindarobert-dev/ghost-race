@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
 import 'leaflet/dist/leaflet.css';
 
@@ -371,7 +371,7 @@ function RealMap({ race, height = 400, mini = false }) {
 
 function Nav({ page, onNav }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = [["registry", "REGISTRY"], ["submit", "SUBMIT"], ["about", "ABOUT"]];
+  const links = [["missions", "MISSIONS"], ["map", "MAP"], ["submit", "SUBMIT"], ["about", "ABOUT"]];
 
   return (
     <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,10,10,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #2A2A2A", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
@@ -431,7 +431,7 @@ function Landing({ onEnter }) {
         </ScrollReveal>
         <ScrollReveal delay={700}>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
-            <button onClick={() => onEnter("registry")} style={{ fontFamily: "'Oswald', sans-serif", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C8B87C", background: "transparent", border: "1px solid #C8B87C", padding: "14px 36px", cursor: "pointer", transition: "all 0.3s", borderRadius: 0 }}
+            <button onClick={() => onEnter("missions")} style={{ fontFamily: "'Oswald', sans-serif", fontSize: 14, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C8B87C", background: "transparent", border: "1px solid #C8B87C", padding: "14px 36px", cursor: "pointer", transition: "all 0.3s", borderRadius: 0 }}
               onMouseEnter={e => { e.target.style.background = "#C8B87C"; e.target.style.color = "#0A0A0A"; }}
               onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.color = "#C8B87C"; }}>
               BROWSE MISSIONS
@@ -495,7 +495,7 @@ function Landing({ onEnter }) {
           </ScrollReveal>
           {RACES.slice(0, 3).map((race, i) => (
             <ScrollReveal key={race.id} delay={i * 100}>
-              <div onClick={() => onEnter("registry")} style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 1fr 80px", alignItems: "center", gap: 16, padding: "16px 0", borderBottom: "1px solid #2A2A2A", cursor: "pointer", transition: "background 0.2s" }}
+              <div onClick={() => onEnter("missions")} style={{ display: "grid", gridTemplateColumns: "40px 2fr 1fr 1fr 80px", alignItems: "center", gap: 16, padding: "16px 0", borderBottom: "1px solid #2A2A2A", cursor: "pointer", transition: "background 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "#111111"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                 <StatusDot status="verified" />
@@ -510,8 +510,8 @@ function Landing({ onEnter }) {
             </ScrollReveal>
           ))}
           <ScrollReveal delay={400}>
-            <button onClick={() => onEnter("registry")} style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#C8B87C", background: "none", border: "none", cursor: "pointer", marginTop: 24, letterSpacing: "0.1em", padding: 0 }}>
-              VIEW FULL REGISTRY &rarr;
+            <button onClick={() => onEnter("missions")} style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#C8B87C", background: "none", border: "none", cursor: "pointer", marginTop: 24, letterSpacing: "0.1em", padding: 0 }}>
+              VIEW ALL MISSIONS &rarr;
             </button>
           </ScrollReveal>
         </div>
@@ -541,7 +541,7 @@ function Landing({ onEnter }) {
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#666666", marginTop: 16 }}>&copy; GHOSTED MMXXVI</div>
           </div>
           <div style={{ display: "flex", gap: 16 }}>
-            {[["registry", "REGISTRY"], ["submit", "SUBMIT"], ["about", "ABOUT"]].map(([k, l]) => (
+            {[["missions", "MISSIONS"], ["map", "MAP"], ["submit", "SUBMIT"], ["about", "ABOUT"]].map(([k, l]) => (
               <button key={k} onClick={() => onEnter(k)} style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#999999", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.1em", padding: "4px 0" }}>{l}</button>
             ))}
           </div>
@@ -571,7 +571,7 @@ function Registry({ onSelect }) {
     <div style={{ minHeight: "100vh", background: "#0A0A0A", padding: "48px 20px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <ScrollReveal>
-          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 42, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>MISSION REGISTRY</h2>
+          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 42, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>MISSIONS</h2>
           <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, color: "#999999", margin: "0 0 32px" }}>Every verified mission. Click to see full GPS tracks and field photos.</p>
         </ScrollReveal>
 
@@ -644,7 +644,7 @@ function Detail({ race, onBack }) {
     <div style={{ minHeight: "100vh", background: "#0A0A0A", padding: "0 0 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 0" }}>
         <ScrollReveal>
-          <button onClick={onBack} style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#999999", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.1em", textTransform: "uppercase", padding: 0, marginBottom: 24 }}>&larr; BACK TO REGISTRY</button>
+          <button onClick={onBack} style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#999999", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.1em", textTransform: "uppercase", padding: 0, marginBottom: 24 }}>&larr; BACK TO MISSIONS</button>
         </ScrollReveal>
 
         {/* Full-width metadata header */}
@@ -937,6 +937,137 @@ function About({ onNav }) {
 }
 
 /* ===================================================================
+   WORLD MAP
+   =================================================================== */
+
+function WorldMap({ onSelectRace }) {
+  const allPoints = RACES.flatMap(r => [...(r.officialRoute || []), ...(r.ghostRoute || [])]);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0A0A0A" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px 0" }}>
+        <ScrollReveal>
+          <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 42, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 8px" }}>GLOBAL MAP</h2>
+          <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, color: "#999999", margin: "0 0 24px" }}>Every verified mission location. Click a marker to explore the route.</p>
+        </ScrollReveal>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px 80px" }}>
+        <ScrollReveal delay={200}>
+          <div style={{ border: "1px solid #2A2A2A", overflow: "hidden", position: "relative" }}>
+            <MapContainer
+              center={[38, -95]}
+              zoom={4}
+              style={{ height: 560, width: "100%", background: "#0A0A0A" }}
+              zoomControl={true}
+              scrollWheelZoom={true}
+            >
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              />
+              {allPoints.length > 0 && <FitBounds points={allPoints} />}
+
+              {RACES.map(race => {
+                const official = race.officialRoute || [];
+                const ghost = race.ghostRoute || [];
+                return (
+                  <React.Fragment key={race.id}>
+                    {official.length > 0 && (
+                      <Polyline positions={official} pathOptions={{ color: "#999999", weight: 2, dashArray: "6, 6", opacity: 0.5 }} />
+                    )}
+                    {ghost.length > 0 && (
+                      <Polyline positions={ghost} pathOptions={{ color: "#C8B87C", weight: 3, opacity: 0.8 }} />
+                    )}
+                    {race.center && (
+                      <CircleMarker
+                        center={race.center}
+                        radius={8}
+                        pathOptions={{ color: "#C8B87C", fillColor: "#0A0A0A", fillOpacity: 1, weight: 2 }}
+                        eventHandlers={{ click: () => onSelectRace(race) }}
+                      >
+                        <Popup>
+                          <div style={{ minWidth: 200 }}>
+                            <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 16, color: "#F5F5F0", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{race.title}</div>
+                            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", letterSpacing: "0.1em", marginBottom: 8 }}>{race.anchor} &middot; {race.anchorLocation}</div>
+                            <div style={{ display: "flex", gap: 16, marginBottom: 8 }}>
+                              <div>
+                                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#C8B87C" }}>{race.totalDistance}</div>
+                                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "#666", textTransform: "uppercase", letterSpacing: "0.1em" }}>TOTAL MI</div>
+                              </div>
+                              <div>
+                                <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#C8B87C" }}>{race.totalTime}</div>
+                                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "#666", textTransform: "uppercase", letterSpacing: "0.1em" }}>TIME</div>
+                              </div>
+                            </div>
+                            <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: "#999" }}>{race.athlete} &middot; {race.type}</div>
+                            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", marginTop: 8, cursor: "pointer" }}>VIEW FULL MISSION &rarr;</div>
+                          </div>
+                        </Popup>
+                      </CircleMarker>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </MapContainer>
+
+            {/* Legend */}
+            <div style={{ position: "absolute", top: 12, right: 12, zIndex: 500, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: "0.1em", background: "rgba(10,10,10,0.9)", padding: "12px 16px", border: "1px solid #2A2A2A", pointerEvents: "none" }}>
+              <div style={{ fontFamily: "'Oswald', sans-serif", fontSize: 12, color: "#F5F5F0", letterSpacing: "0.12em", marginBottom: 10, textTransform: "uppercase" }}>Missions</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ color: "#C8B87C", display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="16" height="3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#C8B87C" strokeWidth="2" /></svg> Mission Route
+                </span>
+                <span style={{ color: "#999999", display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="16" height="3"><line x1="0" y1="1.5" x2="16" y2="1.5" stroke="#999" strokeWidth="2" strokeDasharray="3,3" /></svg> Official Course
+                </span>
+                <span style={{ color: "#A0915A", display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#0A0A0A" stroke="#C8B87C" strokeWidth="1.5" /></svg> Location
+                </span>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        {/* Mission cards below the map */}
+        <div style={{ marginTop: 40 }}>
+          <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 24, color: "#F5F5F0", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 24px" }}>ALL LOCATIONS</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
+            {RACES.map((race, i) => (
+              <ScrollReveal key={race.id} delay={i * 100}>
+                <div onClick={() => onSelectRace(race)} style={{ background: "#111111", border: "1px solid #2A2A2A", cursor: "pointer", transition: "all 0.2s", overflow: "hidden" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#333"; e.currentTarget.style.boxShadow = "0 0 0 1px rgba(200,184,124,0.1)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#2A2A2A"; e.currentTarget.style.boxShadow = "none"; }}>
+                  {/* Mini map */}
+                  <div style={{ height: 140, overflow: "hidden", borderBottom: "1px solid #2A2A2A" }}>
+                    <RealMap race={race} height={140} mini={true} />
+                  </div>
+                  <div style={{ padding: "16px 20px 20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <StatusDot status={race.verified ? "verified" : "pending"} />
+                      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "#666", letterSpacing: "0.1em" }}>{race.photos?.length || 0} PHOTOS</span>
+                    </div>
+                    <h4 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 20, color: "#F5F5F0", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 4px", lineHeight: 1.2 }}>{race.title}</h4>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#666", marginBottom: 12 }}>{race.anchor} &middot; {race.anchorLocation}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <Badge type={race.type} />
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <Stat value={`${race.totalDistance}`} label="Total Mi" small />
+                        <Stat value={race.totalTime} label="Time" small />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===================================================================
    APP
    =================================================================== */
 
@@ -1004,8 +1135,9 @@ export default function App() {
 
       {page !== "landing" && <Nav page={page} onNav={nav} />}
       {page === "landing" && <Landing onEnter={nav} />}
-      {page === "registry" && !selected && <Registry onSelect={r => { setSelected(r); setPage("detail"); window.scrollTo(0, 0); }} />}
-      {page === "detail" && selected && <Detail race={selected} onBack={() => nav("registry")} />}
+      {page === "missions" && !selected && <Registry onSelect={r => { setSelected(r); setPage("detail"); window.scrollTo(0, 0); }} />}
+      {page === "detail" && selected && <Detail race={selected} onBack={() => nav("missions")} />}
+      {page === "map" && <WorldMap onSelectRace={r => { setSelected(r); setPage("detail"); window.scrollTo(0, 0); }} />}
       {page === "submit" && <Submit />}
       {page === "about" && <About onNav={nav} />}
     </div>
