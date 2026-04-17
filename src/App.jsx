@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from "react-leaflet";
+import 'leaflet/dist/leaflet.css';
 
 /* ===================================================================
    DATA
@@ -15,11 +17,30 @@ const RACES = [
     type: "Course Reversal", verified: true, avatar: "MC", ghostRaceCount: 3,
     officialTrack: makeTrack([[45,320],[70,305],[105,290],[140,270],[175,255],[200,235],[230,220],[265,200],[290,175],[310,155],[335,140],[360,120],[385,105],[410,95],[440,80],[470,65],[500,55],[530,50],[560,42],[590,38],[620,45],[645,55],[670,50],[695,42]]),
     ghostTrack: makeTrack([[695,58],[670,65],[645,70],[620,60],[590,53],[560,57],[530,65],[500,70],[470,80],[440,95],[410,110],[385,120],[360,135],[335,155],[310,170],[290,190],[265,215],[230,235],[200,250],[175,270],[140,285],[105,305],[70,320],[45,335]]),
+    center: [45.03, -87.18],
+    officialRoute: [
+      [45.192, -87.130], [45.186, -87.138], [45.178, -87.148], [45.170, -87.161],
+      [45.162, -87.175], [45.155, -87.188], [45.148, -87.200], [45.142, -87.212],
+      [45.136, -87.225], [45.133, -87.240], [45.124, -87.250], [45.115, -87.258],
+      [45.105, -87.265], [45.092, -87.272], [45.078, -87.278], [45.062, -87.283],
+      [45.046, -87.287], [45.020, -87.295], [44.995, -87.305], [44.970, -87.315],
+      [44.942, -87.325], [44.915, -87.335], [44.890, -87.345], [44.868, -87.355],
+      [44.852, -87.365], [44.840, -87.372], [44.834, -87.377]
+    ],
+    ghostRoute: [
+      [44.834, -87.380], [44.840, -87.375], [44.852, -87.368], [44.868, -87.358],
+      [44.890, -87.348], [44.915, -87.338], [44.942, -87.328], [44.970, -87.318],
+      [44.995, -87.308], [45.020, -87.298], [45.046, -87.290], [45.062, -87.286],
+      [45.078, -87.281], [45.092, -87.275], [45.105, -87.268], [45.115, -87.261],
+      [45.124, -87.253], [45.133, -87.243], [45.136, -87.228], [45.142, -87.215],
+      [45.148, -87.203], [45.155, -87.191], [45.162, -87.178], [45.170, -87.164],
+      [45.178, -87.151], [45.186, -87.141], [45.192, -87.133]
+    ],
     photos: [
-      { x: 620, y: 52, time: "11:42 PM", caption: "Mile 8 — Total darkness on the peninsula road. Just me and the headlamp.", color: "#1a3328" },
-      { x: 360, y: 128, time: "3:15 AM", caption: "Mile 31 — First light breaking through the trees. The loneliest I've ever felt in a race.", color: "#0f2a1e" },
-      { x: 140, y: 278, time: "6:50 AM", caption: "Mile 47 — Approaching the start line. I can see headlights from the parking area. They have no idea.", color: "#1a2d22" },
-      { x: 500, y: 62, time: "2:30 PM", caption: "Mile 78 — Running the same stretch in daylight that I ran in darkness 15 hours ago. Completely different course.", color: "#162e20" },
+      { x: 620, y: 52, time: "11:42 PM", caption: "Mile 8 — Total darkness on the peninsula road. Just me and the headlamp.", color: "#1a3328", lat: 44.970, lng: -87.318 },
+      { x: 360, y: 128, time: "3:15 AM", caption: "Mile 31 — First light breaking through the trees. The loneliest I've ever felt in a race.", color: "#0f2a1e", lat: 45.078, lng: -87.281 },
+      { x: 140, y: 278, time: "6:50 AM", caption: "Mile 47 — Approaching the start line. I can see headlights from the parking area. They have no idea.", color: "#1a2d22", lat: 45.170, lng: -87.164 },
+      { x: 500, y: 62, time: "2:30 PM", caption: "Mile 78 — Running the same stretch in daylight that I ran in darkness 15 hours ago. Completely different course.", color: "#162e20", lat: 45.046, lng: -87.290 },
     ],
   },
   {
@@ -30,10 +51,29 @@ const RACES = [
     type: "Pre-Race Ultra", verified: true, avatar: "JW", ghostRaceCount: 1,
     officialTrack: makeTrack([[350,300],[370,280],[400,265],[430,250],[460,240],[490,225],[510,205],[520,180],[510,155],[490,140],[460,130],[430,125],[400,130],[380,145],[370,165],[375,190],[390,210],[410,225],[430,235],[460,240],[480,250],[490,265],[485,285],[470,300]]),
     ghostTrack: makeTrack([[350,315],[320,300],[290,280],[260,265],[230,275],[210,295],[195,315],[185,290],[175,265],[165,240],[180,220],[200,205],[225,195],[250,185],[270,170],[285,150],[300,135],[280,120],[255,110],[230,105],[210,115],[195,135],[185,160],[180,185],[190,210],[210,230],[235,245],[260,255],[285,260],[310,265],[330,275],[345,290],[350,310]]),
+    center: [29.76, -95.37],
+    officialRoute: [
+      [29.753, -95.360], [29.757, -95.370], [29.760, -95.382], [29.762, -95.395],
+      [29.763, -95.408], [29.760, -95.420], [29.758, -95.432], [29.763, -95.432],
+      [29.768, -95.428], [29.770, -95.418], [29.768, -95.408], [29.762, -95.398],
+      [29.758, -95.417], [29.754, -95.417], [29.750, -95.408], [29.748, -95.395],
+      [29.745, -95.383], [29.745, -95.372], [29.748, -95.362], [29.750, -95.355],
+      [29.752, -95.352], [29.753, -95.356], [29.753, -95.358], [29.753, -95.360]
+    ],
+    ghostRoute: [
+      [29.753, -95.360], [29.757, -95.358], [29.765, -95.355], [29.775, -95.360],
+      [29.785, -95.370], [29.795, -95.385], [29.801, -95.399], [29.795, -95.410],
+      [29.785, -95.415], [29.775, -95.418], [29.770, -95.425], [29.765, -95.432],
+      [29.763, -95.432], [29.755, -95.425], [29.750, -95.415], [29.748, -95.400],
+      [29.752, -95.385], [29.758, -95.375], [29.763, -95.368], [29.758, -95.358],
+      [29.752, -95.350], [29.748, -95.345], [29.750, -95.355], [29.755, -95.365],
+      [29.760, -95.378], [29.762, -95.392], [29.760, -95.405], [29.756, -95.418],
+      [29.753, -95.362], [29.753, -95.360]
+    ],
     photos: [
-      { x: 195, y: 310, time: "11:30 PM", caption: "Mile 6 — Empty Houston streets. The city is asleep and I've got 94 miles to go.", color: "#1a2825" },
-      { x: 175, y: 258, time: "2:45 AM", caption: "Mile 28 — Refueling at a 24hr gas station. The cashier thinks I'm crazy.", color: "#12261e" },
-      { x: 350, y: 308, time: "6:55 AM", caption: "Mile 74 — Joining the marathon corral. 30,000 fresh runners. I'm shaking.", color: "#1e3328" },
+      { x: 195, y: 310, time: "11:30 PM", caption: "Mile 6 — Empty Houston streets. The city is asleep and I've got 94 miles to go.", color: "#1a2825", lat: 29.775, lng: -95.360 },
+      { x: 175, y: 258, time: "2:45 AM", caption: "Mile 28 — Refueling at a 24hr gas station. The cashier thinks I'm crazy.", color: "#12261e", lat: 29.801, lng: -95.399 },
+      { x: 350, y: 308, time: "6:55 AM", caption: "Mile 74 — Joining the marathon corral. 30,000 fresh runners. I'm shaking.", color: "#1e3328", lat: 29.753, lng: -95.360 },
     ],
   },
   {
@@ -44,11 +84,30 @@ const RACES = [
     type: "Back-to-Back", verified: true, avatar: "SO", ghostRaceCount: 5,
     officialTrack: makeTrack([[80,180],[100,160],[130,145],[165,135],[200,130],[240,128],[280,130],[320,135],[360,145],[400,150],[440,148],[480,140],[520,135],[560,138],[600,148],[630,165],[650,185],[655,210],[640,235],[615,250],[585,255],[555,248],[530,235],[510,218]]),
     ghostTrack: makeTrack([[80,200],[110,215],[145,225],[180,230],[215,228],[250,222],[285,218],[320,222],[350,232],[375,245],[395,260],[410,278],[420,298],[415,318],[400,332],[375,338],[350,330],[330,315],[315,295],[305,275],[300,255],[305,235],[315,218],[330,205]]),
+    center: [30.17, -95.46],
+    officialRoute: [
+      [30.182, -95.479], [30.188, -95.485], [30.198, -95.495], [30.212, -95.505],
+      [30.228, -95.515], [30.245, -95.525], [30.265, -95.535], [30.285, -95.545],
+      [30.305, -95.550], [30.325, -95.552], [30.340, -95.552], [30.350, -95.550],
+      [30.345, -95.540], [30.330, -95.530], [30.310, -95.518], [30.285, -95.508],
+      [30.258, -95.498], [30.230, -95.490], [30.205, -95.482], [30.185, -95.478],
+      [30.172, -95.472], [30.168, -95.465], [30.170, -95.460], [30.175, -95.465],
+      [30.178, -95.472]
+    ],
+    ghostRoute: [
+      [30.182, -95.479], [30.185, -95.485], [30.190, -95.492], [30.198, -95.498],
+      [30.208, -95.505], [30.220, -95.510], [30.232, -95.515], [30.242, -95.518],
+      [30.250, -95.518], [30.255, -95.515], [30.258, -95.508], [30.255, -95.500],
+      [30.248, -95.492], [30.238, -95.485], [30.225, -95.478], [30.210, -95.472],
+      [30.195, -95.470], [30.182, -95.470], [30.175, -95.472], [30.170, -95.472],
+      [30.170, -95.468], [30.172, -95.463], [30.176, -95.468], [30.180, -95.474],
+      [30.182, -95.479]
+    ],
     photos: [
-      { x: 280, y: 130, time: "SAT 9:15 AM", caption: "Half Ironman bike leg — feeling strong. Tomorrow is going to be a different story.", color: "#18302a" },
-      { x: 400, y: 335, time: "SAT 4:30 PM", caption: "Finishing the 70.3. Legs are already questioning tomorrow's decision.", color: "#142820" },
-      { x: 440, y: 146, time: "SUN 1:20 PM", caption: "Full Ironman bike — mile 80. The wheels are coming off but I'm still moving.", color: "#1a332a" },
-      { x: 530, y: 232, time: "SUN 8:45 PM", caption: "Final marathon miles. Walking more than running. Don't care. I'm finishing this.", color: "#0f2418" },
+      { x: 280, y: 130, time: "SAT 9:15 AM", caption: "Half Ironman bike leg — feeling strong. Tomorrow is going to be a different story.", color: "#18302a", lat: 30.220, lng: -95.510 },
+      { x: 400, y: 335, time: "SAT 4:30 PM", caption: "Finishing the 70.3. Legs are already questioning tomorrow's decision.", color: "#142820", lat: 30.182, lng: -95.479 },
+      { x: 440, y: 146, time: "SUN 1:20 PM", caption: "Full Ironman bike — mile 80. The wheels are coming off but I'm still moving.", color: "#1a332a", lat: 30.325, lng: -95.552 },
+      { x: 530, y: 232, time: "SUN 8:45 PM", caption: "Final marathon miles. Walking more than running. Don't care. I'm finishing this.", color: "#0f2418", lat: 30.170, lng: -95.465 },
     ],
   },
   {
@@ -59,11 +118,29 @@ const RACES = [
     type: "Expedition + Race", verified: true, avatar: "DM", ghostRaceCount: 2,
     officialTrack: makeTrack([[360,280],[380,260],[405,245],[430,230],[455,218],[475,200],[490,180],[500,158],[505,138],[495,118],[480,105],[460,95],[435,92],[410,98],[390,112],[378,132],[375,155],[380,178],[392,200],[410,218],[430,230],[450,245],[465,262],[470,280]]),
     ghostTrack: makeTrack([[60,90],[85,105],[115,118],[145,125],[175,128],[200,120],[220,108],[240,98],[265,95],[290,105],[310,120],[325,140],[335,162],[340,185],[345,210],[350,235],[355,258],[360,280]]),
+    center: [39.20, -106.40],
+    officialRoute: [
+      [39.251, -106.292], [39.258, -106.310], [39.265, -106.330], [39.275, -106.358],
+      [39.260, -106.370], [39.240, -106.375], [39.215, -106.378], [39.185, -106.380],
+      [39.150, -106.380], [39.115, -106.378], [39.080, -106.377], [39.055, -106.410],
+      [39.035, -106.460], [39.020, -106.510], [39.003, -106.559], [38.993, -106.580],
+      [38.983, -106.593], [39.003, -106.559], [39.020, -106.510], [39.035, -106.460],
+      [39.055, -106.410], [39.080, -106.377], [39.115, -106.378], [39.150, -106.380],
+      [39.185, -106.380], [39.215, -106.378], [39.240, -106.375], [39.260, -106.370],
+      [39.275, -106.358], [39.265, -106.330], [39.258, -106.310], [39.251, -106.292]
+    ],
+    ghostRoute: [
+      [39.191, -106.817], [39.175, -106.790], [39.160, -106.760], [39.148, -106.730],
+      [39.138, -106.700], [39.128, -106.670], [39.118, -106.640], [39.110, -106.610],
+      [39.107, -106.563], [39.115, -106.530], [39.130, -106.500], [39.150, -106.470],
+      [39.170, -106.440], [39.190, -106.410], [39.210, -106.385], [39.225, -106.360],
+      [39.238, -106.335], [39.245, -106.315], [39.250, -106.300], [39.251, -106.292]
+    ],
     photos: [
-      { x: 145, y: 125, time: "DAY 1", caption: "Independence Pass. 12,095 feet. The start of something massive.", color: "#1a2d30" },
-      { x: 265, y: 95, time: "DAY 2", caption: "Continental Divide crossing. Can see for 50 miles in every direction.", color: "#122830" },
-      { x: 355, y: 258, time: "DAY 3", caption: "Walking into Leadville. My legs have 47 miles on them and I haven't even started the race.", color: "#182a22" },
-      { x: 505, y: 138, time: "RACE NIGHT", caption: "Hope Pass at midnight during the 100. Second time over 12,000 feet this week.", color: "#0f2225" },
+      { x: 145, y: 125, time: "DAY 1", caption: "Independence Pass. 12,095 feet. The start of something massive.", color: "#1a2d30", lat: 39.107, lng: -106.563 },
+      { x: 265, y: 95, time: "DAY 2", caption: "Continental Divide crossing. Can see for 50 miles in every direction.", color: "#122830", lat: 39.150, lng: -106.470 },
+      { x: 355, y: 258, time: "DAY 3", caption: "Walking into Leadville. My legs have 47 miles on them and I haven't even started the race.", color: "#182a22", lat: 39.245, lng: -106.315 },
+      { x: 505, y: 138, time: "RACE NIGHT", caption: "Hope Pass at midnight during the 100. Second time over 12,000 feet this week.", color: "#0f2225", lat: 39.003, lng: -106.559 },
     ],
   },
   {
@@ -74,11 +151,28 @@ const RACES = [
     type: "Night Double", verified: true, avatar: "AL", ghostRaceCount: 4,
     officialTrack: makeTrack([[60,250],[90,235],[120,215],[145,195],[170,180],[200,170],[235,162],[270,155],[300,148],[330,140],[355,128],[380,115],[410,108],[445,105],[480,110],[510,120],[540,135],[565,150],[590,165],[615,175],[640,180],[665,172],[690,160]]),
     ghostTrack: makeTrack([[60,265],[90,250],[120,232],[145,212],[170,196],[200,185],[235,178],[270,170],[300,163],[330,156],[355,143],[380,130],[410,123],[445,120],[480,125],[510,135],[540,150],[565,166],[590,180],[615,190],[640,195],[665,187],[690,175]]),
+    center: [47.65, -90.70],
+    officialRoute: [
+      [47.670, -90.710], [47.660, -90.720], [47.648, -90.732], [47.635, -90.745],
+      [47.622, -90.758], [47.610, -90.770], [47.600, -90.785], [47.590, -90.800],
+      [47.579, -90.845], [47.565, -90.862], [47.548, -90.878], [47.530, -90.888],
+      [47.510, -90.895], [47.500, -90.900], [47.510, -90.895], [47.530, -90.888],
+      [47.548, -90.878], [47.565, -90.862], [47.579, -90.845], [47.590, -90.800],
+      [47.600, -90.785], [47.610, -90.770]
+    ],
+    ghostRoute: [
+      [47.671, -90.711], [47.661, -90.721], [47.649, -90.733], [47.636, -90.746],
+      [47.623, -90.759], [47.611, -90.771], [47.601, -90.786], [47.591, -90.801],
+      [47.580, -90.846], [47.566, -90.863], [47.549, -90.879], [47.531, -90.889],
+      [47.511, -90.896], [47.501, -90.901], [47.511, -90.896], [47.531, -90.889],
+      [47.549, -90.879], [47.566, -90.863], [47.580, -90.846], [47.591, -90.801],
+      [47.601, -90.786], [47.611, -90.771]
+    ],
     photos: [
-      { x: 200, y: 178, time: "1:30 AM", caption: "Single-track by headlamp. Every root is trying to kill me.", color: "#0f1f28" },
-      { x: 445, y: 112, time: "3:50 AM", caption: "Carlton Peak summit in total darkness. The stars are absurd up here.", color: "#0a1a25" },
-      { x: 60, y: 258, time: "5:55 AM", caption: "Back at the start. Runners stretching, drinking coffee. I just ran their entire race in the dark.", color: "#1a2830" },
-      { x: 540, y: 142, time: "11:20 AM", caption: "Same section, now in daylight. I can finally see what I was running through.", color: "#152a20" },
+      { x: 200, y: 178, time: "1:30 AM", caption: "Single-track by headlamp. Every root is trying to kill me.", color: "#0f1f28", lat: 47.622, lng: -90.759 },
+      { x: 445, y: 112, time: "3:50 AM", caption: "Carlton Peak summit in total darkness. The stars are absurd up here.", color: "#0a1a25", lat: 47.579, lng: -90.845 },
+      { x: 60, y: 258, time: "5:55 AM", caption: "Back at the start. Runners stretching, drinking coffee. I just ran their entire race in the dark.", color: "#1a2830", lat: 47.671, lng: -90.711 },
+      { x: 540, y: 142, time: "11:20 AM", caption: "Same section, now in daylight. I can finally see what I was running through.", color: "#152a20", lat: 47.549, lng: -90.879 },
     ],
   },
 ];
@@ -146,171 +240,125 @@ function StatusDot({ status = "verified" }) {
 }
 
 /* ===================================================================
-   COURSE MAP
+   REAL MAP (Leaflet)
    =================================================================== */
 
-function CourseMap({ race, height = 400, mini = false }) {
-  const [activePhoto, setActivePhoto] = useState(null);
-  const [hoveredPhoto, setHoveredPhoto] = useState(null);
+function FitBounds({ points }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!points || points.length === 0) return;
+    map.fitBounds(points, { padding: [24, 24] });
+  }, [map, points]);
+  return null;
+}
 
-  const w = 740;
-  const h = height;
-  const toPath = (track) => track.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-
-  const rand = (i) => {
-    const x = Math.sin(race.id * 9301 + i * 12.9898) * 43758.5453;
-    return x - Math.floor(x);
-  };
-
-  const contourLines = [];
-  for (let i = 0; i < 11; i++) {
-    const y1 = 25 + i * 36;
-    const pts = [];
-    for (let x = -10; x <= w + 10; x += 14) {
-      pts.push(`${x},${y1 + Math.sin(x * 0.01 + i * 1.2 + race.id) * 20 + Math.sin(x * 0.019 + i * 0.7) * 11}`);
-    }
-    contourLines.push(pts.join(" "));
-  }
-
-  const riverPts = Array.from({ length: 24 }).map((_, i) => {
-    const x = (i / 23) * (w + 20) - 10;
-    const y = h * 0.62 + Math.sin(x * 0.014 + race.id * 2) * 34 + Math.sin(x * 0.032) * 14;
-    return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-  }).join(" ");
-
-  const mountains = Array.from({ length: 7 }).map((_, i) => ({
-    x: 40 + rand(i * 3) * (w - 80),
-    y: 50 + rand(i * 3 + 1) * (h - 160),
-    size: 13 + rand(i * 3 + 2) * 11,
-  }));
-
-  const trees = Array.from({ length: 22 }).map((_, i) => ({
-    x: rand(i * 5 + 200) * w,
-    y: 30 + rand(i * 5 + 201) * (h - 50),
-    size: 2.5 + rand(i * 5 + 202) * 2,
-  }));
+function RealMap({ race, height = 400, mini = false }) {
+  const official = race.officialRoute || [];
+  const ghost = race.ghostRoute || [];
+  const allPoints = [...official, ...ghost];
+  const tileUrl = mini
+    ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+  const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
   return (
     <div style={{ position: "relative", background: "#0A0A0A", border: mini ? "none" : "1px solid #2A2A2A", overflow: "hidden" }}>
-      <svg viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: "block", height: mini ? 140 : height }}>
-        <defs>
-          <filter id={`gl-${race.id}`}><feGaussianBlur stdDeviation="3" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-          <linearGradient id={`gg-${race.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#A0915A" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="#C8B87C" stopOpacity="1" />
-            <stop offset="100%" stopColor="#A0915A" stopOpacity="0.6" />
-          </linearGradient>
-          <linearGradient id={`mt-${race.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#6b6456" />
-            <stop offset="40%" stopColor="#3a3428" />
-            <stop offset="100%" stopColor="#0A0A0A" />
-          </linearGradient>
-          <radialGradient id={`vig-${race.id}`} cx="50%" cy="50%" r="65%">
-            <stop offset="60%" stopColor="#000" stopOpacity="0" />
-            <stop offset="100%" stopColor="#000" stopOpacity="0.75" />
-          </radialGradient>
-        </defs>
+      <MapContainer
+        center={race.center}
+        zoom={mini ? 10 : 11}
+        style={{ height, width: "100%", background: "#0A0A0A" }}
+        zoomControl={!mini}
+        dragging={!mini}
+        scrollWheelZoom={!mini}
+        doubleClickZoom={!mini}
+        touchZoom={!mini}
+        keyboard={!mini}
+        attributionControl={!mini}
+      >
+        <TileLayer url={tileUrl} attribution={attribution} />
+        {allPoints.length > 0 && <FitBounds points={allPoints} />}
 
-        {!mini && (
-          <g opacity="0.15">
-            {Array.from({ length: 13 }).map((_, i) => {
-              const y = (i / 12) * h;
-              return <line key={`h${i}`} x1="0" y1={y} x2={w} y2={y} stroke="#2A2A2A" strokeWidth="0.5" />;
-            })}
-            {Array.from({ length: 19 }).map((_, i) => {
-              const x = (i / 18) * w;
-              return <line key={`v${i}`} x1={x} y1="0" x2={x} y2={h} stroke="#2A2A2A" strokeWidth="0.5" />;
-            })}
-          </g>
+        {official.length > 0 && (
+          <Polyline positions={official} pathOptions={{ color: "#999999", weight: 3, dashArray: "8, 8", opacity: 0.8 }} />
+        )}
+        {ghost.length > 0 && (
+          <Polyline positions={ghost} pathOptions={{ color: "#C8B87C", weight: 4, opacity: 1 }} />
         )}
 
-        {!mini && contourLines.map((pts, i) => (
-          <polyline key={i} points={pts} fill="none" stroke={i % 3 === 0 ? "#4a3d28" : "#2a2418"} strokeWidth={i % 3 === 0 ? "1" : "0.6"} opacity={i % 3 === 0 ? 0.75 : 0.45} />
-        ))}
-
-        {!mini && (
+        {!mini && official.length > 0 && (
           <>
-            <path d={riverPts} fill="none" stroke="#0f2640" strokeWidth="7" opacity="0.7" strokeLinecap="round" />
-            <path d={riverPts} fill="none" stroke="#2a5c8a" strokeWidth="3" opacity="0.85" strokeLinecap="round" />
-            <path d={riverPts} fill="none" stroke="#5ba0d0" strokeWidth="1" opacity="0.6" strokeLinecap="round" />
+            <CircleMarker
+              center={official[0]}
+              radius={7}
+              pathOptions={{ color: "#d8dce8", fillColor: "#0A0A0A", fillOpacity: 1, weight: 2 }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#d8dce8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Official Start</div>
+              </Popup>
+            </CircleMarker>
+            <CircleMarker
+              center={official[official.length - 1]}
+              radius={7}
+              pathOptions={{ color: "#ffb84a", fillColor: "#0A0A0A", fillOpacity: 1, weight: 2 }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#ffb84a", letterSpacing: "0.1em", textTransform: "uppercase" }}>Official Finish</div>
+              </Popup>
+            </CircleMarker>
           </>
         )}
 
-        {!mini && mountains.map((m, i) => (
-          <g key={`mt${i}`}>
-            <ellipse cx={m.x + m.size * 0.3} cy={m.y + m.size * 1.5} rx={m.size * 1.2} ry={m.size * 0.2} fill="#000" opacity="0.6" />
-            <polygon points={`${m.x},${m.y} ${m.x - m.size},${m.y + m.size * 1.4} ${m.x + m.size},${m.y + m.size * 1.4}`} fill={`url(#mt-${race.id})`} stroke="#5a5245" strokeWidth="0.7" />
-            <polygon points={`${m.x},${m.y} ${m.x - m.size * 0.3},${m.y + m.size * 0.55} ${m.x + m.size * 0.15},${m.y + m.size * 0.55}`} fill="#8a8478" opacity="0.85" />
-            <polygon points={`${m.x},${m.y} ${m.x - m.size * 0.15},${m.y + m.size * 0.28} ${m.x + m.size * 0.08},${m.y + m.size * 0.28}`} fill="#d8d4c4" opacity="0.9" />
-          </g>
+        {!mini && ghost.length > 0 && (
+          <>
+            <CircleMarker
+              center={ghost[0]}
+              radius={7}
+              pathOptions={{ color: "#C8B87C", fillColor: "#0A0A0A", fillOpacity: 1, weight: 2 }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", letterSpacing: "0.1em", textTransform: "uppercase" }}>Ghost Start</div>
+              </Popup>
+            </CircleMarker>
+            <CircleMarker
+              center={ghost[ghost.length - 1]}
+              radius={7}
+              pathOptions={{ color: "#C8B87C", fillColor: "#0A0A0A", fillOpacity: 1, weight: 2 }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", letterSpacing: "0.1em", textTransform: "uppercase" }}>Ghost Finish</div>
+              </Popup>
+            </CircleMarker>
+          </>
+        )}
+
+        {!mini && race.photos && race.photos.map((photo, i) => (
+          (photo.lat && photo.lng) ? (
+            <CircleMarker
+              key={i}
+              center={[photo.lat, photo.lng]}
+              radius={6}
+              pathOptions={{ color: "#A0915A", fillColor: "#0A0A0A", fillOpacity: 1, weight: 1.5 }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", letterSpacing: "0.15em", marginBottom: 6, textTransform: "uppercase" }}>{photo.time}</div>
+                <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 12, color: "#E0E0E0", lineHeight: 1.5, maxWidth: 240 }}>{photo.caption}</div>
+              </Popup>
+            </CircleMarker>
+          ) : null
         ))}
-
-        {!mini && trees.map((t, i) => (
-          <g key={`tr${i}`} opacity="0.6">
-            <ellipse cx={t.x} cy={t.y + t.size * 1.7} rx={t.size * 0.9} ry={t.size * 0.15} fill="#000" opacity="0.5" />
-            <polygon points={`${t.x},${t.y} ${t.x - t.size},${t.y + t.size * 1.6} ${t.x + t.size},${t.y + t.size * 1.6}`} fill="#141f14" stroke="#2a3d25" strokeWidth="0.3" />
-          </g>
-        ))}
-
-        {!mini && <rect width={w} height={h} fill={`url(#vig-${race.id})`} pointerEvents="none" />}
-
-        <path d={toPath(race.officialTrack)} fill="none" stroke="#000" strokeWidth={mini ? 4 : 5} opacity="0.7" transform="translate(2,3)" />
-        <path d={toPath(race.officialTrack)} fill="none" stroke="#a8aec0" strokeWidth={mini ? 2 : 2.5} strokeDasharray={mini ? "4,4" : "6,6"} opacity="0.9" />
-
-        <path d={toPath(race.ghostTrack)} fill="none" stroke="#000" strokeWidth={mini ? 5 : 7} opacity="0.8" transform="translate(2,4)" />
-        <path d={toPath(race.ghostTrack)} fill="none" stroke={`url(#gg-${race.id})`} strokeWidth={mini ? 2.5 : 3.5} filter={`url(#gl-${race.id})`} strokeLinecap="round" strokeLinejoin="round" />
-
-        {!mini && <>
-          <circle cx={race.ghostTrack[0].x} cy={race.ghostTrack[0].y} r="7" fill="#000" stroke="#C8B87C" strokeWidth="1.8" />
-          <text x={race.ghostTrack[0].x} y={race.ghostTrack[0].y + 3.5} textAnchor="middle" fill="#C8B87C" fontSize="8" fontFamily="'IBM Plex Mono', monospace" fontWeight="bold">G</text>
-          <circle cx={race.officialTrack[0].x} cy={race.officialTrack[0].y} r="7" fill="#000" stroke="#d8dce8" strokeWidth="1.5" />
-          <text x={race.officialTrack[0].x} y={race.officialTrack[0].y + 3.5} textAnchor="middle" fill="#d8dce8" fontSize="8" fontFamily="'IBM Plex Mono', monospace" fontWeight="bold">S</text>
-          <circle cx={race.officialTrack.at(-1).x} cy={race.officialTrack.at(-1).y} r="7" fill="#000" stroke="#ffb84a" strokeWidth="1.5" />
-          <text x={race.officialTrack.at(-1).x} y={race.officialTrack.at(-1).y + 3.5} textAnchor="middle" fill="#ffb84a" fontSize="8" fontFamily="'IBM Plex Mono', monospace" fontWeight="bold">F</text>
-        </>}
-
-        {!mini && race.photos.map((photo, i) => (
-          <g key={i} style={{ cursor: "pointer" }} onClick={() => setActivePhoto(activePhoto === i ? null : i)} onMouseEnter={() => setHoveredPhoto(i)} onMouseLeave={() => setHoveredPhoto(null)}>
-            <circle cx={photo.x} cy={photo.y} r={hoveredPhoto === i || activePhoto === i ? 14 : 10} fill="rgba(200,184,124,0.08)" stroke="none">
-              {hoveredPhoto !== i && activePhoto !== i && <animate attributeName="r" values="10;14;10" dur="3s" repeatCount="indefinite" />}
-            </circle>
-            <circle cx={photo.x} cy={photo.y} r="5" fill="#0A0A0A" stroke={activePhoto === i ? "#C8B87C" : "#A0915A"} strokeWidth="1.5" />
-            <rect x={photo.x - 2.5} y={photo.y - 2.5} width="5" height="4" rx="0.5" fill="none" stroke={activePhoto === i ? "#C8B87C" : "#A0915A"} strokeWidth="0.8" />
-            <circle cx={photo.x} cy={photo.y - 0.5} r="1" fill={activePhoto === i ? "#C8B87C" : "#A0915A"} />
-          </g>
-        ))}
-      </svg>
+      </MapContainer>
 
       {!mini && (
-        <div style={{ position: "absolute", bottom: 12, right: 16, display: "flex", gap: 16, fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.1em" }}>
+        <div style={{ position: "absolute", bottom: 12, right: 16, zIndex: 500, display: "flex", gap: 16, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: "0.1em", background: "rgba(10,10,10,0.85)", padding: "8px 12px", border: "1px solid #2A2A2A", pointerEvents: "none" }}>
           <span style={{ color: "#C8B87C", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#C8B87C" strokeWidth="2" /></svg> Mission Route
-          </span>
-          <span style={{ color: "#a8aec0", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#a8aec0" strokeWidth="2" strokeDasharray="4,4" /></svg> Official Course
+            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#C8B87C" strokeWidth="2" /></svg> MISSION ROUTE
           </span>
           <span style={{ color: "#999999", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#000" stroke="#a8aec0" strokeWidth="1" /></svg> Photo
+            <svg width="20" height="3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#999999" strokeWidth="2" strokeDasharray="4,4" /></svg> OFFICIAL COURSE
           </span>
-        </div>
-      )}
-
-      {!mini && activePhoto !== null && race.photos[activePhoto] && (
-        <div style={{ position: "absolute", left: "50%", bottom: 50, transform: "translateX(-50%)", background: "#111111", border: "1px solid #2A2A2A", maxWidth: 380, width: "90%", boxShadow: "0 20px 60px rgba(0,0,0,0.6)", animation: "fadeUp 0.3s ease" }}>
-          <div style={{ height: 160, background: `linear-gradient(135deg, ${race.photos[activePhoto].color}, #0A0A0A)`, position: "relative", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(200,184,124,0.02) 20px, rgba(200,184,124,0.02) 21px), repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(200,184,124,0.02) 20px, rgba(200,184,124,0.02) 21px)" }} />
-            <div style={{ textAlign: "center", position: "relative" }}>
-              <div style={{ width: 44, height: 44, border: "1px solid #2A2A2A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 6px" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A0915A" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3.5" /><path d="M7 5V3h4v2" /></svg>
-              </div>
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#666666", letterSpacing: "0.15em", textTransform: "uppercase" }}>Geotagged Photo</div>
-            </div>
-          </div>
-          <div style={{ padding: "14px 18px" }}>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#C8B87C", letterSpacing: "0.15em", marginBottom: 6 }}>{race.photos[activePhoto].time}</div>
-            <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 14, color: "#999999", lineHeight: 1.6, margin: 0 }}>{race.photos[activePhoto].caption}</p>
-          </div>
-          <button onClick={() => setActivePhoto(null)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(10,10,10,0.7)", border: "1px solid #2A2A2A", color: "#999999", width: 28, height: 28, cursor: "pointer", fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, borderRadius: 0 }}>x</button>
+          <span style={{ color: "#A0915A", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="10" height="10"><circle cx="5" cy="5" r="4" fill="#0A0A0A" stroke="#A0915A" strokeWidth="1.5" /></svg> PHOTO
+          </span>
         </div>
       )}
     </div>
@@ -643,7 +691,7 @@ function Detail({ race, onBack }) {
             <ScrollReveal delay={300}>
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "#666666", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Click photo markers on the map to see where they were taken</div>
-                <CourseMap race={race} height={400} />
+                <RealMap race={race} height={400} />
               </div>
             </ScrollReveal>
 
@@ -945,6 +993,13 @@ export default function App() {
           .detail-grid { grid-template-columns: 1fr !important; }
           .detail-sidebar { position: static !important; }
         }
+
+        .leaflet-popup-content-wrapper { background: #111111 !important; color: #E0E0E0 !important; border-radius: 0 !important; border: 1px solid #2A2A2A; }
+        .leaflet-popup-tip { background: #111111 !important; }
+        .leaflet-popup-close-button { color: #999 !important; }
+        .leaflet-container { background: #0A0A0A !important; }
+        .leaflet-control-attribution { background: rgba(10,10,10,0.8) !important; color: #666 !important; font-family: 'IBM Plex Mono', monospace; font-size: 9px; }
+        .leaflet-control-attribution a { color: #999 !important; }
       `}</style>
 
       {page !== "landing" && <Nav page={page} onNav={nav} />}
